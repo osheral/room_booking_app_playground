@@ -1,0 +1,3 @@
+rootProject.name = 'room_booking_app_playground'
+
+include ':app'
