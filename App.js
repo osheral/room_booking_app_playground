@@ -4,14 +4,16 @@
 
 import React, {Component} from 'react';
 import {
-    Platform,
-    StyleSheet,
-    Text,
-    View,
-    Button,
-    WebView
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  WebView
 } from 'react-native';
 import firebase from './src/firebase';
+
+import {GoogleSignin, GoogleSigninButton} from 'react-native-google-signin';
 
 import htmlFile from './src/hello.html';
 
@@ -82,15 +84,43 @@ export default class App extends Component<Props> {
   
   ipAddress() {
     fetch('https://dev-room-booking-proximity.herokuapp.com/api/ipaddress')
-        .then(res=> {
+        .then(res => {
           return res.json();
         })
-        .then(res=> {
+        .then(res => {
           console.log(res);
         })
-        .catch(err=> {
+        .catch(err => {
           console.error(err);
         });
+  }
+  
+  signInUsingLib() {
+    GoogleSignin.hasPlayServices({autoResolve: true})
+        .then(() => {
+          console.log('configuring');
+          // play services are available. can now configure library
+          return GoogleSignin.configure({
+            scopes: ["https://www.googleapis.com/auth/calendar"],
+            iosClientId: '',
+            webClientId: '469164708927-9e74868dl5o8o77s8q1bt1ll63b1nmt3.apps.googleusercontent.com',
+            offlineAccess: true,
+            hostedDomain: '',
+            forceConsentPrompt: true,
+            accountName: ''
+          })
+        })
+        .then(() => {
+          console.log('signing in');
+          return GoogleSignin.signIn();
+        })
+        .then((user) => {
+          console.log(user);
+          // user.scopes.forEach(console.log)
+        })
+        .catch((err) => {
+          console.error("Play services error", err);
+        })
   }
   
   render() {
@@ -109,24 +139,46 @@ export default class App extends Component<Props> {
           </Text>
           <Button
               onPress={() => {
-                {/*this.ipAddress();*/}
-                {/*this.signIn();*/}
+                {/*this.ipAddress();*/
+                }
+                {/*this.signIn();*/
+                }
                 this.signInWithRedirect();
               }}
               title="Sign in"/>
           
           <Button
               title="test"
-              onPress={()=>{
+              onPress={() => {
                 console.log(location);
               }}
           />
           
-          <WebView
-              source={{uri: 'https://facebook.com'}}
-              style={{marginTop: 20, height: 100, width :200}}
+          {/*<WebView*/}
+          {/*source={{uri: 'https://facebook.com'}}*/}
+          {/*style={{marginTop: 20, height: 100, width :200}}*/}
+          {/*/>*/}
+          
+          <GoogleSigninButton
+              style={{width: 48, height: 48}}
+              size={GoogleSigninButton.Size.Icon}
+              color={GoogleSigninButton.Color.Dark}
+              onPress={this.signInUsingLib.bind(this)}/>
+  
+          <Button
+              title="re - sign in"
+              onPress={() => {
+                const user = GoogleSignin.currentUser();
+                console.log(user);
+              }}
           />
-        
+          
+          <Button
+              title="sign out"
+              onPress={() => {
+                GoogleSignin.revokeAccess()
+              }}
+          />
         </View>
     );
   }
